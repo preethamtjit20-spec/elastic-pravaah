@@ -1,0 +1,46 @@
+name: critical_alert
+description: "Raise a critical alert requiring immediate human review - used by Guardian agent for safety-critical situations"
+parameters:
+  agent_name:
+    type: string
+    description: "Name of the agent raising the alert"
+    required: true
+  patient_id:
+    type: string
+    description: "Patient ID this alert relates to"
+    required: true
+  alert_type:
+    type: string
+    description: "Type of alert (deterioration_detected, safety_veto, critical_vitals, capacity_emergency)"
+    required: true
+  reasoning:
+    type: string
+    description: "Detailed reasoning for the critical alert"
+    required: true
+  recommended_action:
+    type: string
+    description: "Recommended immediate action"
+    required: true
+  confidence:
+    type: number
+    description: "Confidence score 0.0-1.0"
+    required: true
+steps:
+  - id: index_alert
+    action: elasticsearch.index
+    params:
+      index: agent-decisions
+      body:
+        timestamp: "{{now}}"
+        agent_name: "{{agent_name}}"
+        patient_id: "{{patient_id}}"
+        decision_type: "safety_alert"
+        action: "{{recommended_action}}"
+        reasoning: "CRITICAL ALERT [{{alert_type}}]: {{reasoning}}"
+        confidence: "{{confidence}}"
+        risk_level: "critical"
+        requires_review: true
+        metadata:
+          alert_type: "{{alert_type}}"
+output:
+  result: "CRITICAL ALERT raised for patient {{patient_id}} - {{alert_type}} - requires immediate review"

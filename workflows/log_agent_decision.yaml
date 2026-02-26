@@ -1,0 +1,53 @@
+name: log_agent_decision
+description: "Log any agent decision to the agent-decisions audit index for full traceability"
+parameters:
+  agent_name:
+    type: string
+    description: "Name of the agent making the decision"
+    required: true
+  patient_id:
+    type: string
+    description: "Patient ID this decision relates to"
+    required: true
+  decision_type:
+    type: string
+    description: "Type of decision (triage, recovery_assessment, capacity_check, discharge_evaluation, safety_alert)"
+    required: true
+  action:
+    type: string
+    description: "The action taken or recommended"
+    required: true
+  reasoning:
+    type: string
+    description: "Detailed reasoning behind the decision"
+    required: true
+  confidence:
+    type: number
+    description: "Confidence score 0.0-1.0"
+    required: true
+  risk_level:
+    type: string
+    description: "Risk level: low, moderate, high, critical"
+    required: false
+  requires_review:
+    type: boolean
+    description: "Whether this decision needs human review"
+    required: false
+steps:
+  - id: index_decision
+    action: elasticsearch.index
+    params:
+      index: agent-decisions
+      body:
+        timestamp: "{{now}}"
+        agent_name: "{{agent_name}}"
+        patient_id: "{{patient_id}}"
+        decision_type: "{{decision_type}}"
+        action: "{{action}}"
+        reasoning: "{{reasoning}}"
+        confidence: "{{confidence}}"
+        risk_level: "{{risk_level | default('moderate')}}"
+        requires_review: "{{requires_review | default(false)}}"
+        metadata: {}
+output:
+  result: "Decision logged for patient {{patient_id}} by {{agent_name}}"

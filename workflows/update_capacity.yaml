@@ -1,0 +1,39 @@
+name: update_capacity
+description: "Update ward capacity when a patient is admitted, transferred, or discharged"
+parameters:
+  ward:
+    type: string
+    description: "Ward identifier (e.g., ICU, surgical, cardiac)"
+    required: true
+  occupied_beds:
+    type: number
+    description: "New occupied bed count"
+    required: true
+  total_beds:
+    type: number
+    description: "Total beds in the ward"
+    required: true
+  ventilators_in_use:
+    type: number
+    description: "Number of ventilators currently in use"
+    required: false
+  notes:
+    type: string
+    description: "Reason for capacity update"
+    required: false
+steps:
+  - id: update_ward
+    action: elasticsearch.index
+    params:
+      index: hospital-capacity
+      id: "{{ward}}"
+      body:
+        ward: "{{ward}}"
+        occupied_beds: "{{occupied_beds}}"
+        total_beds: "{{total_beds}}"
+        available_beds: "{{total_beds - occupied_beds}}"
+        occupancy_rate: "{{(occupied_beds / total_beds * 100) | round(1)}}"
+        ventilators_in_use: "{{ventilators_in_use | default(0)}}"
+        updated_at: "{{now}}"
+output:
+  result: "Capacity updated for ward {{ward}} - {{occupied_beds}}/{{total_beds}} beds occupied"

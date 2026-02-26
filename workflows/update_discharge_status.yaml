@@ -1,0 +1,70 @@
+name: update_discharge_status
+description: "Create or update a discharge plan for a patient with criteria assessment"
+parameters:
+  patient_id:
+    type: string
+    description: "Patient ID"
+    required: true
+  status:
+    type: string
+    description: "Discharge status: pending, approved, discharged, deferred"
+    required: true
+  vitals_stable:
+    type: boolean
+    description: "Are vitals stable for 24+ hours?"
+    required: true
+  no_fever_24h:
+    type: boolean
+    description: "No fever in the last 24 hours?"
+    required: true
+  pain_controlled:
+    type: boolean
+    description: "Pain score consistently below 4?"
+    required: true
+  mobility_adequate:
+    type: boolean
+    description: "Patient can mobilize adequately for home care?"
+    required: true
+  oral_medication_tolerated:
+    type: boolean
+    description: "Patient tolerating oral medications?"
+    required: true
+  follow_up_scheduled:
+    type: boolean
+    description: "Follow-up appointment scheduled?"
+    required: true
+  patient_educated:
+    type: boolean
+    description: "Patient educated on home care and warning signs?"
+    required: true
+  target_discharge_date:
+    type: string
+    description: "Target discharge date in ISO format"
+    required: false
+  discharge_notes:
+    type: string
+    description: "Additional notes about the discharge plan"
+    required: false
+steps:
+  - id: update_plan
+    action: elasticsearch.index
+    params:
+      index: discharge-plans
+      id: "{{patient_id}}"
+      body:
+        patient_id: "{{patient_id}}"
+        updated_at: "{{now}}"
+        status: "{{status}}"
+        vitals_stable: "{{vitals_stable}}"
+        no_fever_24h: "{{no_fever_24h}}"
+        pain_controlled: "{{pain_controlled}}"
+        mobility_adequate: "{{mobility_adequate}}"
+        oral_medication_tolerated: "{{oral_medication_tolerated}}"
+        follow_up_scheduled: "{{follow_up_scheduled}}"
+        patient_educated: "{{patient_educated}}"
+        criteria_met_count: "{{[vitals_stable, no_fever_24h, pain_controlled, mobility_adequate, oral_medication_tolerated, follow_up_scheduled, patient_educated] | select | list | length}}"
+        criteria_total: 7
+        target_discharge_date: "{{target_discharge_date | default('')}}"
+        discharge_notes: "{{discharge_notes | default('')}}"
+output:
+  result: "Discharge plan updated for patient {{patient_id}} - status: {{status}}"
