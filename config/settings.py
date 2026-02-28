@@ -32,7 +32,7 @@ REQUEST_TIMEOUT = 30
 
 
 def validate():
-    """Check that required env vars are set."""
+    """Check that required env vars are set and basic sanity checks pass."""
     missing = []
     if not ES_URL:
         missing.append("ES_URL")
@@ -43,3 +43,18 @@ def validate():
             f"Missing required environment variables: {', '.join(missing)}. "
             f"Copy .env.example to .env and fill in values."
         )
+
+    # Sanity checks to prevent misuse
+    if not ES_URL.startswith("https://"):
+        raise ValueError("ES_URL must use HTTPS for secure communication.")
+    if KIBANA_URL and not KIBANA_URL.startswith("https://"):
+        raise ValueError("KIBANA_URL must use HTTPS for secure communication.")
+    if len(ES_API_KEY) < 20:
+        raise ValueError("ES_API_KEY looks too short - check your API key.")
+
+
+def redacted_key(key):
+    """Return a redacted version of an API key for safe logging."""
+    if not key or len(key) < 8:
+        return "***"
+    return key[:4] + "..." + key[-4:]

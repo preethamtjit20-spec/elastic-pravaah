@@ -146,6 +146,12 @@ elastic-pravaah/
 | PAT-007 | Acute MI | Just admitted 4h ago (emergency) |
 | PAT-008 | Severe Asthma | Hidden deterioration (wow moment) |
 
+## Documentation
+
+- [Technical Documentation](docs/DOCUMENTATION.md) -- Deep dive into architecture, agent methodologies, ES|QL queries, and the Guardian Effect
+- [Architecture Diagram](docs/diagrams/architecture.png) -- System architecture
+- [Patient Journey Flow](docs/diagrams/patient-journey-flow.png) -- 5-phase assessment flowchart
+
 ## License
 
 Apache 2.0 -- see [LICENSE](LICENSE)
